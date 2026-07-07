@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorama Interactivo Yokot'an</title>
+    <!-- Fuente amigable para niños -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-fondo: #f0f7f4;
+            --color-principal: #e63946;
+            --color-secundario: #4a90e2;
+            --color-acento: #2ec4b6;
+            --color-reverso: #ffb703; /* Color llamativo para la parte trasera de la carta */
+            --color-texto: #2b2d42;
+            --fuente-infantil: 'Fredoka', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            font-family: var(--fuente-infantil);
+            color: var(--color-texto);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+
+        header h1 {
+            color: var(--color-principal);
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--color-secundario);
+            font-size: 1.1rem;
+        }
+
+        .cartel-uso {
+            margin-top: 14px;
+            padding: 14px;
+            background: linear-gradient(135deg, #fff8dc, #fff3c4);
+            border: 2px dashed #f4b942;
+            border-radius: 18px;
+            box-shadow: 0 6px 12px rgba(244, 185, 66, 0.18);
+            text-align: left;
+        }
+
+        .cartel-uso h2 {
+            color: #8b5e00;
+            font-size: 1.02rem;
+            margin-bottom: 6px;
+        }
+
+        .cartel-uso p {
+            color: #5a4b2a;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .acciones-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-voz {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--color-secundario), #6aa7f0);
+            color: #fff;
+            font-family: var(--fuente-infantil);
+            font-size: 0.98rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.25);
+            transition: transform 0.2s;
+        }
+
+        .btn-voz:hover {
+            transform: scale(1.03);
+        }
+
+        /* Tablero del juego */
+        .tablero-memorama {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columnas fijas para el juego */
+            gap: 15px;
+            max-width: 600px;
+            width: 100%;
+            perspective: 1000px; /* Efecto 3D para el volteo */
+        }
+
+        /* Estructura de la Carta */
+        .carta {
+            aspect-ratio: 1 / 1; /* Cartas perfectamente cuadradas */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            cursor: pointer;
+        }
+
+        /* Clase que añade JavaScript al hacer clic */
+        .carta.volteada {
+            transform: rotateY(180deg);
+        }
+
+        /* Caras de la carta (Frente y Vuelta) */
+        .cara-frontal, .cara-trasera {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Oculta el reverso al girar */
+            border-radius: 15px;
+            border: 4px solid #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Parte trasera (Lo que ve el niño al inicio) */
+        .cara-trasera {
+            background-color: var(--color-reverso);
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        /* Parte frontal (El dibujo descubierto) */
+        .cara-frontal {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            padding: 10px;
+        }
+
+        .cara-frontal img {
+            max-width: 75%;
+            max-height: 65%;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .cara-frontal span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-principal);
+            text-align: center;
+        }
+
+        /* Botón de Reiniciar */
+        .btn-reiniciar {
+            margin-top: 10px;
+            padding: 12px 25px;
+            font-family: var(--fuente-infantil);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            background-color: var(--color-acento);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(46, 196, 182, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-reiniciar:hover {
+            transform: scale(1.05);
+        }
+
+        /* Ajuste para pantallas pequeñas (celulares) */
+        @media (max-width: 450px) {
+            .tablero-memorama {
+                gap: 10px;
+            }
+            .cara-frontal span {
+                font-size: 0.9rem;
+            }
+            .cara-trasera {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>¡Memorama Yokot'an!</h1>
+        <p>Encuentra los pares de animalitos</p>
+        <aside class="cartel-uso" aria-label="Uso del memorama y resumen del juego">
+            <h2>¿Cómo usar el memorama?</h2>
+            <p>Da clic en dos cartas. Si coinciden, forman una pareja; si no, se vuelven a girar. Con cada intento recuerdas mejor el nombre del animal en lengua yokot'an.</p>
+            <div class="acciones-header">
+                <button type="button" class="btn-voz" id="btn-resumen">🔊 Leer resumen</button>
+                <button type="button" class="btn-voz" id="btn-instrucciones">🔊 Escuchar cómo jugar</button>
+            </div>
+        </aside>
+    </header>
+
+    <!-- El tablero se genera dinámicamente con JavaScript -->
+    <main class="tablero-memorama" id="tablero"></main>
+
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:8px; text-align:center;">
+        <button class="btn-reiniciar" onclick="iniciarJuego()">¡Jugar de nuevo!</button>
+        <p style="font-size:0.95rem; color:#5a4b2a; max-width:520px; line-height:1.35; margin-top:2px;">Primera edición 2019. D. R. Taller de Lengua y Comunicación en la Lengua Yokot'an / Biblioteca Comunitaria Intercultural</p>
+    </div>
+
+    <script>
+        // 1. Definimos los datos de los animales basados en "Glosario en la Lengua Yokot'an.jpg"
+        // Para un memorama de 4x4 (16 cartas), necesitamos 8 parejas.
+        const animalesBase = [
+            { nombre: "Perro", yokotan: "Wichu'", img: "imagenes/Perro.jpg" },
+            { nombre: "Cerdo", yokotan: "Chitam", img: "imagenes/Cerdo.jpg" },
+            { nombre: "Alacrán", yokotan: "tsinaj", img: "imagenes/Alacran.jpg" },
+            { nombre: "Gallo", yokotan: "Ken", img: "imagenes/Gallo.jpg" },
+            { nombre: "Vaca", yokotan: "Na Bek'et", img: "imagenes/Vaca.jpg" },
+            { nombre: "Gato", yokotan: "Mis", img: "imagenes/Gato.jpg" },
+            { nombre: "Pato", yokotan: "Patu", img: "imagenes/Pato.jpg" },
+            { nombre: "Conejo", yokotan: "T'ul", img: "imagenes/Conejo.jpg" }
+        ];
+
+        let cartasVolteadas = [];
+        let parejasEncontradas = 0;
+        let bloqueado = false;
+
+        const tablero = document.getElementById('tablero');
+        const botonResumen = document.getElementById('btn-resumen');
+        const botonInstrucciones = document.getElementById('btn-instrucciones');
+        const resumenTexto = "Resumen del memorama: este juego ayuda a recordar animales y sus nombres en lengua yokot'an mientras practicas atención y memoria.";
+        const instruccionesTexto = "Cómo jugar: da clic en dos cartas. Si coinciden, forman una pareja; si no, vuelven a girarse. Trata de recordar dónde están los animales y sus nombres en lengua yokot'an.";
+
+        function leerTexto(texto) {
+            if (!('speechSynthesis' in window)) {
+                alert('Tu navegador no admite lectura de voz en esta página.');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const mensaje = new SpeechSynthesisUtterance(texto);
+            mensaje.lang = 'es-MX';
+            mensaje.rate = 0.95;
+            window.speechSynthesis.speak(mensaje);
+        }
+
+        if (botonResumen) {
+            botonResumen.addEventListener('click', () => leerTexto(resumenTexto));
+        }
+
+        if (botonInstrucciones) {
+            botonInstrucciones.addEventListener('click', () => leerTexto(instruccionesTexto));
+        }
+
+        // 2. Función para iniciar o reiniciar el juego
+        function iniciarJuego() {
+            tablero.innerHTML = "";
+            cartasVolteadas = [];
+            parejasEncontradas = 0;
+            bloqueado = false;
+
+            // Duplicamos el array para tener parejas (16 cartas en total)
+            let cartasDelJuego = [...animalesBase, ...animalesBase];
+
+            // Barajamos/Mezclamos las cartas aleatoriamente
+            cartasDelJuego.sort(() => Math.random() - 0.5);
+
+            // Creamos el HTML de las cartas de forma dinámica
+            cartasDelJuego.forEach((animal, index) => {
+                const elementoCarta = document.createElement('div');
+                elementoCarta.classList.add('carta');
+                elementoCarta.dataset.nombre = animal.nombre; // Guardamos la identidad para comparar
+                elementoCarta.dataset.index = index;
+
+                elementoCarta.innerHTML = `
+                    <div class="cara-trasera">?</div>
+                    <div class="cara-frontal">
+                        <img src="${animal.img}" alt="${animal.nombre}">
+                        <span>${animal.yokotan}</span>
+                    </div>
+                `;
+
+                elementoCarta.addEventListener('click', voltearCarta);
+                tablero.appendChild(elementoCarta);
+            });
+        }
+
+        // 3. Lógica para voltear e interactuar
+        function voltearCarta() {
+            if (bloqueado) return;
+            if (this.classList.contains('volteada')) return;
+
+            this.classList.add('volteada');
+            cartasVolteadas.push(this);
+
+            // Si ya se voltearon dos cartas, verificamos
+            if (cartasVolteadas.length === 2) {
+                verificarPareja();
+            }
+        }
+
+        // 4. Verificar si son iguales
+        function verificarPareja() {
+            bloqueado = true;
+            const [carta1, carta2] = cartasVolteadas;
+
+            if (carta1.dataset.nombre === carta2.dataset.nombre) {
+                // ¡Es una pareja correcta!
+                parejasEncontradas++;
+                cartasVolteadas = [];
+                bloqueado = false;
+
+                // Si se encontraron las 8 parejas
+                if (parejasEncontradas === animalesBase.length) {
+                    setTimeout(() => alert("¡Felicidades! Lograste completar el memorama Yokot'an 🎉"), 500);
+                }
+            } else {
+                // No son iguales, se vuelven a ocultar después de 1 segundo
+                setTimeout(() => {
+                    carta1.classList.remove('volteada');
+                    carta2.classList.remove('volteada');
+                    cartasVolteadas = [];
+                    bloqueado = false;
+                }, 1000);
+            }
+        }
+
+        // Ejecutar el juego de inmediato al cargar la página
+        iniciarJuego();
+    </script>
+</body>
+</html>
